@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, Image } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Trip {
@@ -14,14 +15,21 @@ interface Trip {
 export default function ListScreen() {
   const [trips, setTrips] = useState<Trip[]>([]);
 
-  useEffect(() => {
-    loadTrips();
-  }, []);
-
   const loadTrips = async () => {
     const stored = await AsyncStorage.getItem('trips');
-    if (stored) setTrips(JSON.parse(stored));
+    if (stored) {
+      const parsedTrips = JSON.parse(stored);
+      // Sort by date descending (most recent first)
+      parsedTrips.sort((a: Trip, b: Trip) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setTrips(parsedTrips);
+    }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadTrips();
+    }, [])
+  );
 
   const renderTrip = ({ item }: { item: Trip }) => (
     <View style={styles.trip}>
