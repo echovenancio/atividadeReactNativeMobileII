@@ -10,7 +10,7 @@ export default function MainScreen() {
   return (
     <Tab.Navigator>
       <Tab.Screen 
-        name="Mapa" 
+        name="Salve sua Viagem" 
         component={MapScreen} 
         options={{
           tabBarIcon: ({ color, size }) => (
@@ -19,7 +19,7 @@ export default function MainScreen() {
         }}
       />
       <Tab.Screen 
-        name="Lista" 
+        name="Viagens Salvas:" 
         component={ListScreen} 
         options={{
           tabBarIcon: ({ color, size }) => (

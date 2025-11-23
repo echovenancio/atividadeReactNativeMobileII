@@ -43,7 +43,7 @@ export default function ListScreen() {
   return (
     <View style={styles.container}>
       {trips.length === 0 ? (
-        <Text style={styles.noTrips}>Nenhuma viagem registrada ainda.</Text>
+        <Text style={styles.noTrips}>Nenhum local registrado ainda.</Text>
       ) : (
         <FlatList
           data={trips}

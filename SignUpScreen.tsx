@@ -25,7 +25,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Cadastro</Text>
+      <Text style={styles.title}>Criar uma Conta</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -41,9 +41,11 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
         secureTextEntry
       />
       <View style={styles.buttonContainer}>
-        <Button title="Cadastrar" onPress={handleSignUp} />
+      <Button title="Cadastrar" onPress={handleSignUp} />
       </View>
+      <View style={styles.buttonContainer}>
       <Button title="Voltar" onPress={() => navigation.goBack()} />
+      </View>
     </View>
   );
 }
@@ -51,27 +53,39 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#f5f5f5',
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 25,
+    backgroundColor: "#EEF2F5", 
   },
+
   title: {
-    fontSize: 28,
-    marginBottom: 30,
-    textAlign: 'center',
-    color: '#333',
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: "700",
+    color: "#2C3E50",
+    marginBottom: 40,
   },
+
   input: {
+    width: "100%",
+    backgroundColor: "#FFF",
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 15,
-    marginBottom: 15,
-    borderRadius: 8,
-    backgroundColor: '#fff',
+    borderColor: "#D0D7DE",
     fontSize: 16,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
+
   buttonContainer: {
+    width: "100%",
     marginTop: 10,
+    borderRadius: 12,
+    overflow: "hidden",
   },
 });
