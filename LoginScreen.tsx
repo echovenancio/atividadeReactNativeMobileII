@@ -26,7 +26,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <Text style={styles.title}>Entrar na Conta</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -54,27 +54,39 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#f5f5f5',
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 25,
+    backgroundColor: "#EEF2F5", 
   },
+
   title: {
-    fontSize: 28,
-    marginBottom: 30,
-    textAlign: 'center',
-    color: '#333',
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: "700",
+    color: "#2C3E50",
+    marginBottom: 40,
   },
+
   input: {
+    width: "100%",
+    backgroundColor: "#FFF",
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 15,
-    marginBottom: 15,
-    borderRadius: 8,
-    backgroundColor: '#fff',
+    borderColor: "#D0D7DE",
     fontSize: 16,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
+
   buttonContainer: {
+    width: "100%",
     marginTop: 10,
+    borderRadius: 12,
+    overflow: "hidden", 
   },
 });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, Button, Alert, TextInput } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -13,6 +13,8 @@ interface Trip {
   photoUri: string;
   date: string;
   name: string;
+  rating: number;
+  description: string;
 }
 
 export default function MapScreen() {
@@ -20,10 +22,14 @@ export default function MapScreen() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [showCamera, setShowCamera] = useState(false);
-  const [cameraRef, setCameraRef] = useState<any>(null);
   const [currentTrip, setCurrentTrip] = useState<Partial<Trip> | null>(null);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [tripName, setTripName] = useState('');
+  const [rating, setRating] = useState(0);
+  const [description, setDescription] = useState('');
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const cameraRef = useRef<any>(null);
 
   useEffect(() => {
     (async () => {
@@ -56,7 +62,7 @@ export default function MapScreen() {
 
   const takePhoto = async () => {
     if (cameraRef) {
-      const photo = await cameraRef.takePictureAsync();
+      const photo = await cameraRef.current.takePictureAsync();
       return photo.uri;
     }
   };
@@ -114,41 +120,106 @@ export default function MapScreen() {
     );
   }
 
-  if (showCamera) {
+   if (showReviewModal) {
     return (
-      <View style={styles.cameraContainer}>
-        <CameraView style={styles.camera} ref={setCameraRef} />
-        <View style={styles.cameraOverlay}>
-          <Button title="Tirar Foto" onPress={async () => {
-            if (cameraRef) {
-              const photo = await cameraRef.takePictureAsync();
-              setShowCamera(false);
-              if (currentTrip) {
-                const trip: Trip = {
-                  ...currentTrip,
-                  id: Date.now().toString(),
-                  photoUri: photo.uri,
-                } as Trip;
-                await addToCalendar(trip.name, trip.date);
-                await saveTrip(trip);
-                setCurrentTrip(null);
-                setTripName('');
-                Alert.alert('Sucesso', 'Viagem registrada!');
-              }
-            }
-          }} />
-          <Button title="Cancelar" onPress={() => { setShowCamera(false); setCurrentTrip(null); }} />
+      <View style={styles.reviewContainer}>
+        <Text style={styles.reviewTitle}>Como foi sua Viagem?</Text>
+
+        <View style={styles.starsContainer}>
+          {[1,2,3,4,5].map(num => (
+            <Text
+              key={num}
+              style={[styles.star, { color: rating >= num ? '#FFD700' : '#ccc' }]}
+              onPress={() => setRating(num)}
+            >
+              ★
+            </Text>
+          ))}
+        </View>
+
+        <TextInput
+          style={styles.reviewInput}
+          placeholder="Fale sobre sua experiência..."
+          value={description}
+          onChangeText={setDescription}
+          multiline
+        />
+        <View style={styles.reviewButtons}>
+          <Button
+            title="Salvar"
+            onPress={async () => {
+              if (!currentTrip || !capturedPhoto) return;
+              const trip: Trip = {
+                ...currentTrip,
+                id: Date.now().toString(),
+                photoUri: capturedPhoto,
+                rating,
+                description,
+              } as Trip;
+              await addToCalendar(trip.name, trip.date);
+              await saveTrip(trip);
+              setCapturedPhoto(null);
+              setDescription('');
+              setRating(0);
+              setCurrentTrip(null);
+              setTripName('');
+              setShowReviewModal(false);
+
+              Alert.alert('Sucesso', 'Viagem registrada!');
+              
+            }}
+          />
+
+          <Button
+            title="Cancelar"
+            onPress={() => {
+              setCapturedPhoto(null);
+              setDescription('');
+              setRating(0);
+              setShowReviewModal(false);
+            }}
+          />
         </View>
       </View>
     );
   }
+
+      if (showCamera) {
+      return (
+        <View style={styles.cameraContainer}>
+          <CameraView style={styles.camera} ref={cameraRef} />
+
+          <View style={styles.cameraOverlay}>
+            <Button
+        title="Tirar Foto"
+      onPress={async () => {
+        if (cameraRef.current) {
+          const photo = await cameraRef.current.takePictureAsync();
+          setCapturedPhoto(photo.uri);
+          setShowCamera(false);
+          setShowReviewModal(true);
+        }
+  }}
+/>
+        <Button
+          title="Cancelar"
+          onPress={() => {
+            setShowCamera(false);
+            setCurrentTrip(null);
+          }}
+        />
+      </View>
+    </View>
+  );
+}
+
 
   return (
     <View style={styles.container}>
       <MapView
         style={styles.map}
         region={{
-          latitude: location.coords.latitude,
+          latitude: location.coords.latitude, 
           longitude: location.coords.longitude,
           latitudeDelta: 0.005,
           longitudeDelta: 0.005,
@@ -230,4 +301,48 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     fontSize: 16,
   },
+  reviewContainer: {
+  flex: 1,
+  backgroundColor: '#fff',
+  padding: 20,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+
+reviewTitle: {
+  fontSize: 22,
+  fontWeight: 'bold',
+  marginBottom: 15,
+  color: '#333',
+},
+
+starsContainer: {
+  flexDirection: 'row',
+  justifyContent: 'center',
+  marginBottom: 15,
+},
+
+star: {
+  fontSize: 40,
+  marginHorizontal: 5,
+},
+
+reviewInput: {
+  width: '90%',
+  minHeight: 80,
+  borderWidth: 1,
+  borderColor: '#ccc',
+  borderRadius: 8,
+  padding: 10,
+  textAlignVertical: 'top',
+  backgroundColor: '#fff',
+  marginBottom: 20,
+  fontSize: 16,
+},
+
+reviewButtons: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  width: '90%',
+},
 });
