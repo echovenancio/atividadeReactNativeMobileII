@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, Button, Alert, TextInput } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -13,6 +13,8 @@ interface Trip {
   photoUri: string;
   date: string;
   name: string;
+  rating: number;
+  description: string;
 }
 
 export default function MapScreen() {
@@ -20,7 +22,6 @@ export default function MapScreen() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [showCamera, setShowCamera] = useState(false);
-  const [cameraRef, setCameraRef] = useState<any>(null);
   const [currentTrip, setCurrentTrip] = useState<Partial<Trip> | null>(null);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [tripName, setTripName] = useState('');
@@ -28,6 +29,7 @@ export default function MapScreen() {
   const [description, setDescription] = useState('');
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const cameraRef = useRef<any>(null);
 
   useEffect(() => {
     (async () => {
@@ -60,7 +62,7 @@ export default function MapScreen() {
 
   const takePhoto = async () => {
     if (cameraRef) {
-      const photo = await cameraRef.takePictureAsync();
+      const photo = await cameraRef.current.takePictureAsync();
       return photo.uri;
     }
   };
@@ -182,44 +184,42 @@ export default function MapScreen() {
     );
   }
 
-  if (showCamera) {
-    return (
-      <View style={styles.cameraContainer}>
-        <CameraView style={styles.camera} ref={setCameraRef} />
-        <View style={styles.cameraOverlay}>
-          <Button title="Tirar Foto" onPress={async () => {
-            if (cameraRef) {
-              const photo = await cameraRef.takePictureAsync();
-              setCapturedPhoto(photo.uri);
-              setShowCamera(false);
-              setShowReviewModal(true);
-              if (currentTrip) {
-                const trip: Trip = {
-                  ...currentTrip,
-                  id: Date.now().toString(),
-                  photoUri: photo.uri,
-                } as Trip;
-                await addToCalendar(trip.name, trip.date);
-                await saveTrip(trip);
-                setCurrentTrip(null);
-                setTripName('');
-                Alert.alert('Sucesso', 'Viagem registrada!');
-              }
-            }
-          }}/>
-              
-          <Button title="Cancelar" onPress={() => { setShowCamera(false); setCurrentTrip(null); }} />
-        </View>
+      if (showCamera) {
+      return (
+        <View style={styles.cameraContainer}>
+          <CameraView style={styles.camera} ref={cameraRef} />
+
+          <View style={styles.cameraOverlay}>
+            <Button
+        title="Tirar Foto"
+      onPress={async () => {
+        if (cameraRef.current) {
+          const photo = await cameraRef.current.takePictureAsync();
+          setCapturedPhoto(photo.uri);
+          setShowCamera(false);
+          setShowReviewModal(true);
+        }
+  }}
+/>
+        <Button
+          title="Cancelar"
+          onPress={() => {
+            setShowCamera(false);
+            setCurrentTrip(null);
+          }}
+        />
       </View>
-    );
-  }
+    </View>
+  );
+}
+
 
   return (
     <View style={styles.container}>
       <MapView
         style={styles.map}
         region={{
-          latitude: location.coords.latitude,
+          latitude: location.coords.latitude, 
           longitude: location.coords.longitude,
           latitudeDelta: 0.005,
           longitudeDelta: 0.005,
